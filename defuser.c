@@ -21,28 +21,40 @@ static int write_answer(char *out, size_t cap, const uint32_t *values, size_t co
 
 int solve_phase_1(uint64_t challenge, char *out, size_t cap) {
     uint32_t values[MAX_FIELDS] = {0};
-    size_t count = 0;
+    size_t count = 1;
     uint32_t lo = (uint32_t)challenge;
     uint32_t hi = (uint32_t)(challenge >> 32);
     uint32_t mid = (uint32_t)(challenge >> 16);
-    count = 1;
     values[0] = (((3*hi+mid)^0xe329)^0x360f)+2*(3*(lo-hi)+0x8217);
     return write_answer(out, cap, values, count);
 }
 
 int solve_phase_2(uint64_t challenge, char *out, size_t cap) {
     uint32_t values[MAX_FIELDS] = {0};
-    size_t count = 0;
-    (void)challenge;
-    // TODO: 根据 phase_02 的汇编，用 challenge 算出口令中的各个整数，依次存入 values，并把 count 改为整数个数。
+    size_t count = 6;
+    values[0] = 3 * (uint32_t)((challenge >> 17) & 0xFF);
+    for (size_t i = 1; i < 6;++i){
+        values[i] = (((challenge>>(21+i*5))&0xF) + values[i-1]) ^ (i*9);
+    }
     return write_answer(out, cap, values, count);
 }
 
 int solve_phase_3(uint64_t challenge, char *out, size_t cap) {
     uint32_t values[MAX_FIELDS] = {0};
-    size_t count = 0;
-    (void)challenge;
-    // TODO: 根据 phase_03 的汇编，用 challenge 算出口令中的各个整数，依次存入 values，并把 count 改为整数个数。
+    size_t count = 2;
+    uint32_t sel = (uint32_t)challenge & 7;
+    uint32_t x = (uint32_t)(challenge >> 3) ^ (uint32_t)(challenge >> 32);
+    values[0] = sel;
+    switch(sel){
+        case 0: values[1] = 3 * x + 0xc3db; break;
+        case 1: values[1] = 5 * x + 0xd455; break;
+        case 2: values[1] = (4 * x) ^ 0x559; break;
+        case 3: values[1] = (x ^ 0x9694) + (x >> 2); break;
+        case 4: values[1] = (4 * x) ^ 0xcccf; break;
+        case 5: values[1] = 5 * x + 0x80cf; break;
+        case 6: values[1] = 5 * x + 0x24626; break;
+        case 7: values[1] = (x ^ 0x6a8) + (x >> 2); break;
+    }
     return write_answer(out, cap, values, count);
 }
 
